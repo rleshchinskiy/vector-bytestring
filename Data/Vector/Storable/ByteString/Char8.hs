@@ -438,23 +438,23 @@ foldr' f = VS.foldr' (\c a -> f (w2c c) a)
 -- | 'foldl1' is a variant of 'foldl' that has no starting value
 -- argument, and thus must be applied to non-empty 'ByteStrings'.
 foldl1 :: (Char -> Char -> Char) -> ByteString -> Char
-foldl1 f v = w2c (VS.foldl1 (\x y -> c2w (f (w2c x) (w2c y))) v)
+foldl1 f = w2c . VS.foldl1 (\x y -> c2w (f (w2c x) (w2c y)))
 {-# INLINE foldl1 #-}
 
 -- | A strict version of 'foldl1'
 foldl1' :: (Char -> Char -> Char) -> ByteString -> Char
-foldl1' f v = w2c (VS.foldl1' (\x y -> c2w (f (w2c x) (w2c y))) v)
+foldl1' f = w2c . VS.foldl1' (\x y -> c2w (f (w2c x) (w2c y)))
 {-# INLINE foldl1' #-}
 
 -- | 'foldr1' is a variant of 'foldr' that has no starting value argument,
 -- and thus must be applied to non-empty 'ByteString's
 foldr1 :: (Char -> Char -> Char) -> ByteString -> Char
-foldr1 f v = w2c (VS.foldr1 (\x y -> c2w (f (w2c x) (w2c y))) v)
+foldr1 f = w2c . VS.foldr1 (\x y -> c2w (f (w2c x) (w2c y)))
 {-# INLINE foldr1 #-}
 
 -- | A strict variant of foldr1
 foldr1' :: (Char -> Char -> Char) -> ByteString -> Char
-foldr1' f v = w2c (VS.foldr1' (\x y -> c2w (f (w2c x) (w2c y))) v)
+foldr1' f = w2c . VS.foldr1' (\x y -> c2w (f (w2c x) (w2c y)))
 {-# INLINE foldr1' #-}
 
 ------------------------------------------------------------------------
@@ -504,7 +504,7 @@ minimum = w2c . VS.minimum
 --
 -- > last (scanl f z xs) == foldl f z xs.
 scanl :: (Char -> Char -> Char) -> Char -> ByteString -> ByteString
-scanl f z = VS.scanl (\a b -> c2w (f (w2c a) (w2c b))) (c2w z)
+scanl f = VS.scanl (\a b -> c2w (f (w2c a) (w2c b))) . c2w
 {-# INLINE scanl #-}
 
 -- | 'scanl1' is a variant of 'scanl' that has no starting value argument:
@@ -516,7 +516,7 @@ scanl1 f = VS.scanl1 (\a b -> c2w (f (w2c a) (w2c b)))
 
 -- | scanr is the right-to-left dual of scanl.
 scanr :: (Char -> Char -> Char) -> Char -> ByteString -> ByteString
-scanr f z = VS.scanr (\a b -> c2w (f (w2c a) (w2c b))) (c2w z)
+scanr f = VS.scanr (\a b -> c2w (f (w2c a) (w2c b))) . c2w
 {-# INLINE scanr #-}
 
 -- | 'scanr1' is a variant of 'scanr' that has no starting value argument.
@@ -573,7 +573,7 @@ replicate w = B.replicate w . c2w
 --
 -- > unfoldr (\x -> if x <= '9' then Just (x, succ x) else Nothing) '0' == "0123456789"
 unfoldr :: (a -> Maybe (Char, a)) -> a -> ByteString
-unfoldr f x0 = VS.unfoldr (fmap k . f) x0
+unfoldr f = VS.unfoldr (fmap k . f)
     where k (i, j) = (c2w i, j)
 {-# INLINE unfoldr #-}
 
@@ -586,7 +586,7 @@ unfoldr f x0 = VS.unfoldr (fmap k . f) x0
 --
 -- > unfoldrN n f s == take n (unfoldr f s)
 unfoldrN :: Int -> (a -> Maybe (Char, a)) -> a -> (ByteString, Maybe a)
-unfoldrN n f w = B.unfoldrN n ((k `fmap`) . f) w
+unfoldrN n f = B.unfoldrN n ((k `fmap`) . f)
     where k (i,j) = (c2w i, j)
 {-# INLINE unfoldrN #-}
 
@@ -810,7 +810,7 @@ notElem c = VS.notElem (c2w c)
 -- and returns the first element in matching the predicate, or 'Nothing'
 -- if there is no such element.
 find :: (Char -> Bool) -> ByteString -> Maybe Char
-find f v = w2c `fmap` VS.find (f . w2c) v
+find f = fmap w2c . VS.find (f . w2c)
 {-# INLINE find #-}
 
 -- | /O(n)/ 'filter', applied to a predicate and a ByteString,
